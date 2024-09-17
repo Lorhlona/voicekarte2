@@ -1,36 +1,114 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 音声からカルテを自動生成するアプリケーション
 
-## Getting Started
+## 概要
 
-First, run the development server:
+このプロジェクトは、音声を録音して OpenAI の API を使用し、患者のカルテを自動生成する Web アプリケーションです。医療現場でのカルテ作成を効率化し、医師の負担を軽減することを目的としています。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 主な機能
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **音声の録音と保存**
+- **音声データのテキスト変換（トランスクリプション）**
+- **初診・再診に対応したカルテの自動生成**
+- **カルテの表示、コピー、クリア機能**
+- **システムプロンプトや OpenAI API キーの設定編集機能**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 動作環境
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- [nvmを使用してNode.jsをインストールする](https://qiita.com/ymzkjpx/items/9658709eb51a23121098)
+- **Node.js**（推奨バージョン 14 以上）
+- **npm** または **yarn**
+- **MUI** を使用しています
 
-## Learn More
+## インストール
 
-To learn more about Next.js, take a look at the following resources:
+1. **リポジトリのクローン**
+    ```bash
+    git clone https://github.com/your-repo/voiceadd.git
+    cd voiceadd
+    ```
+    または、[ZIPでダウンロード](https://github.com/your-repo/voiceadd/archive/refs/heads/main.zip)して解凍します。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **依存関係のインストール**
+    プロジェクトフォルダ内でターミナルを開き、以下のコマンドを実行します。
+    ```bash
+    npm install
+    ```
+    または
+    ```bash
+    yarn install
+    ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. **OpenAI APIキーの設定**
+    - `config` ディレクトリ内に `api_key.txt` ファイルを作成し、OpenAI の API キーを記入してください。
 
-## Deploy on Vercel
+4. **システムプロンプトの設定（任意）**
+    - 初診用プロンプト：`config/initial_prompt.txt`
+    - 再診用プロンプト：`config/follow_up_prompt.txt`
+    - これらのファイルにカスタムのプロンプトを記入することで、カルテの生成内容を調整できます。
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 起動方法
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **開発サーバーを起動します。**
+    ```bash
+    npm run dev
+    ```
+    または
+    ```bash
+    yarn dev
+    ```
+
+2. **ブラウザで [http://localhost:3000](http://localhost:3000) にアクセスして、アプリケーションを確認してください。**
+
+## 使い方
+
+1. **録音開始**
+    - 「録音開始」ボタンをクリックし、患者の症状や状態を話してください。
+
+2. **録音停止**
+    - 録音が完了したら「録音停止」ボタンをクリックします。
+
+3. **カルテ作成**
+    - 初診の場合：「初診カルテ作成」ボタンをクリック
+    - 再診の場合：「再診カルテ作成」ボタンをクリック
+    - 録音した音声がテキストに変換され、OpenAI API を使用してカルテが自動生成されます。
+
+4. **カルテの操作**
+    - **コピー**：「コピー」ボタンで生成されたカルテをクリップボードにコピーできます。
+    - **クリア**：「クリア」ボタンで音声データやカルテ内容をリセットします。
+
+5. **設定変更**
+    - 「設定」ボタンから以下の設定が行えます。
+        - 初診カルテシステムプロンプト編集
+        - 再診カルテシステムプロンプト編集
+        - OpenAI APIキー設定
+
+## 注意事項
+
+- **OpenAI API キーの管理**：API キーは個人情報です。第三者に共有しないようご注意ください。
+- **API 利用料金**：OpenAI API の利用には料金が発生します。事前に利用料金をご確認ください。
+- **動作確認**：本アプリケーションはローカル環境での動作を前提としています。サーバー環境での利用には追加の設定が必要になる場合があります。
+
+## ライセンス
+
+このコードの改変は許可されていますが、商用利用は禁止されています。自分のクリニックでの使用に限り許可されています。
+
+## 開発者向け情報
+
+### ディレクトリ構成
+
+- `/components`：React コンポーネント
+- `/pages/api`：API ルート
+- `/utils`：ユーティリティ関数
+- `/hooks`：カスタムフック
+- `/config`：設定ファイル
+
+### 主なファイル
+
+- `components/medical-chart-app.tsx`：メインのアプリケーションコンポーネント
+- `utils/api.ts`：API 呼び出し用の関数
+- `pages/api/uploadAudio.ts`：音声アップロード用の API エンドポイント
+- `pages/api/generateRecord.ts`：カルテ生成用の API エンドポイント
+
+### コントリビューション
+
+バグの報告や機能の提案は Issues や Pull Requests を通じて受け付けています。ご協力よろしくお願いいたします。
