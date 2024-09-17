@@ -65,6 +65,8 @@ export function MedicalChartAppComponent() {
     setSnackbarOpen(true);
   };
 
+  const [isTranscribing, setIsTranscribing] = useState(false);
+
   const createChart = async (type: 'initial' | 'followUp') => {
     if (!audioBlob) {
       setSnackbarMessage('まず録音を行ってください。');
@@ -77,12 +79,13 @@ export function MedicalChartAppComponent() {
       setSnackbarOpen(true);
       return;
     }
-
+    setIsTranscribing(true);
     try {
-      console.log('API Key:', apiKey); // 関数内部で API キーをログ出力
+      console.log('API Key:', apiKey);
 
-      const transcript = await uploadAudio(audioBlob, apiKey);
-      console.log('Transcript:', transcript); // トランスクリプトをログ出力
+      // トランスクリプトを取得
+      const { transcript } = await uploadAudio(audioBlob, apiKey);
+      console.log('Transcript:', transcript);
 
       if (!transcript) {
         setSnackbarMessage('音声のトランスクリプトが取得できませんでした。');
@@ -95,7 +98,7 @@ export function MedicalChartAppComponent() {
 
       const prompt = type === 'initial' ? initialPrompt : followUpPrompt;
       const record = await generateMedicalRecord(transcript, prompt, apiKey);
-      console.log('Generated Medical Record:', record); // 生成されたカルテをログに出力
+      console.log('Generated Medical Record:', record);
 
       setChartContent(record);
       setSnackbarMessage(`${type === 'initial' ? '初診' : '再診'}カルテを作成しました。`);
@@ -104,6 +107,9 @@ export function MedicalChartAppComponent() {
       console.error('Error creating chart:', error);
       setSnackbarMessage(`エラーが発生しました: ${error.message}`);
       setSnackbarOpen(true);
+    } finally {
+      // トランスクリプション処理終了
+      setIsTranscribing(false);
     }
   };
 
@@ -144,12 +150,12 @@ export function MedicalChartAppComponent() {
         dialogType === 'api' ? 'api_key.txt' :
         dialogType === 'initialPrompt' ? 'initial_prompt.txt' :
         'follow_up_prompt.txt';
-  
+    
       const content =
         dialogType === 'api' ? apiKey :
         dialogType === 'initialPrompt' ? initialPrompt :
         followUpPrompt;
-  
+    
       const response = await fetch(`/api/config?filename=${filename}`, {
         method: 'POST',
         headers: {
@@ -157,9 +163,9 @@ export function MedicalChartAppComponent() {
         },
         body: JSON.stringify({ content })
       });
-  
+    
       const result = await response.json();
-  
+    
       if (response.ok) {
         setSnackbarMessage('設定を保存しました。');
         await loadConfig();
@@ -193,6 +199,7 @@ export function MedicalChartAppComponent() {
           color="primary"
           startIcon={<NoteAdd />}
           onClick={() => createChart('initial')}
+          disabled={isRecording || isTranscribing}
         >
           初診カルテ作成
         </Button>
@@ -201,6 +208,7 @@ export function MedicalChartAppComponent() {
           color="primary"
           startIcon={<NoteAdd />}
           onClick={() => createChart('followUp')}
+          disabled={isRecording || isTranscribing}
         >
           再診カルテ作成
         </Button>
