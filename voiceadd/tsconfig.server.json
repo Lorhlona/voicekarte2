@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+      "target": "es2017",
+      "module": "commonjs",
+      "lib": ["esnext"],
+      "allowJs": true,
+      "esModuleInterop": true,
+      "strict": true,
+      "outDir": "dist",
+      "rootDir": "./"
+    },
+    "include": ["server/**/*"]
+  }
