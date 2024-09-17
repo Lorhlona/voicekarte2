@@ -38,6 +38,16 @@
     yarn install
     ```
 
+<<<<<<< HEAD
+=======
+(3. **OpenAI APIキーの設定**
+    - `config` ディレクトリ内に `api_key.txt` ファイルを作成し、OpenAI の API キーを記入してください。) ←あとで起動してから設定でapikeyいれられます。
+
+4. **システムプロンプトの設定（任意）**
+    - 初診用プロンプト：`config/initial_prompt.txt`
+    - 再診用プロンプト：`config/follow_up_prompt.txt`
+    - これらのファイルにカスタムのプロンプトを記入することで、カルテの生成内容を調整できます。
+>>>>>>> 59ae164f5fe15276a7682a26438d3be0b77e5fd5
 
 ## 起動方法
 
