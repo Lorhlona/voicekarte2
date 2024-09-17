@@ -33,6 +33,7 @@ export function MedicalChartAppComponent() {
   const [apiKey, setApiKey] = useState('');
   const [initialPrompt, setInitialPrompt] = useState(initialSystemPrompt);
   const [followUpPrompt, setFollowUpPrompt] = useState(initialSystemPrompt);
+  const [isTranscribing, setIsTranscribing] = useState(false);
 
   const loadConfig = async () => {
     try {
@@ -64,8 +65,6 @@ export function MedicalChartAppComponent() {
     }
     setSnackbarOpen(true);
   };
-
-  const [isTranscribing, setIsTranscribing] = useState(false);
 
   const createChart = async (type: 'initial' | 'followUp') => {
     if (!audioBlob) {
@@ -150,12 +149,12 @@ export function MedicalChartAppComponent() {
         dialogType === 'api' ? 'api_key.txt' :
         dialogType === 'initialPrompt' ? 'initial_prompt.txt' :
         'follow_up_prompt.txt';
-    
+  
       const content =
         dialogType === 'api' ? apiKey :
         dialogType === 'initialPrompt' ? initialPrompt :
         followUpPrompt;
-    
+  
       const response = await fetch(`/api/config?filename=${filename}`, {
         method: 'POST',
         headers: {
@@ -163,9 +162,9 @@ export function MedicalChartAppComponent() {
         },
         body: JSON.stringify({ content })
       });
-    
+  
       const result = await response.json();
-    
+  
       if (response.ok) {
         setSnackbarMessage('設定を保存しました。');
         await loadConfig();
@@ -183,7 +182,9 @@ export function MedicalChartAppComponent() {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', p: 2 }}>
       <Paper elevation={3} sx={{ flex: 1, mb: 2, p: 2, overflowY: 'auto' }}>
-        <Typography variant="body1">{chartContent || 'カルテがここに表示されます。'}</Typography>
+        <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+          {chartContent || 'カルテがここに表示されます。'}
+        </Typography>
       </Paper>
       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <Button
