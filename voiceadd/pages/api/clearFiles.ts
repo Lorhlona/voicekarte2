@@ -1,4 +1,3 @@
-// voiceadd/pages/api/clearFiles.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs';
 import path from 'path';
@@ -19,9 +18,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const files = fs.readdirSync(audioDir);
 
+    if (files.length === 0) {
+      res.status(200).json({ message: '削除するファイルがありません。' });
+      return;
+    }
+
     for (const file of files) {
       const filePath = path.join(audioDir, file);
-      fs.unlinkSync(filePath);
+      try {
+        fs.unlinkSync(filePath);
+        console.log(`Deleted file: ${filePath}`);
+      } catch (err) {
+        console.error(`Failed to delete file: ${filePath}`, err);
+      }
     }
 
     res.status(200).json({ message: 'すべての音声ファイルとテキストファイルを削除しました。' });

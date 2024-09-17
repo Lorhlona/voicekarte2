@@ -15,7 +15,7 @@ import {
   Menu,
   MenuItem
 } from '@mui/material';
-import { Mic, NoteAdd, FileCopy, Clear, Settings } from '@mui/icons-material';
+import { Mic, NoteAdd, FileCopy, Clear, Settings, FileUpload } from '@mui/icons-material';
 import useRecorder from '@/hooks/useRecorder';
 import { uploadAudio, generateMedicalRecord } from '@/utils/api';
 import { getConfigFromAPI } from '@/utils/config';
@@ -34,6 +34,10 @@ export function MedicalChartAppComponent() {
   const [initialPrompt, setInitialPrompt] = useState(initialSystemPrompt);
   const [followUpPrompt, setFollowUpPrompt] = useState(initialSystemPrompt);
   const [isTranscribing, setIsTranscribing] = useState(false);
+
+  // 追加部分
+  const [uploadedAudio, setUploadedAudio] = useState<Blob | null>(null);
+  const [isFileSelected, setIsFileSelected] = useState(false);
 
   const loadConfig = async () => {
     try {
@@ -66,9 +70,32 @@ export function MedicalChartAppComponent() {
     setSnackbarOpen(true);
   };
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      console.log('Selected file:', file);
+      const allowedExtensions = ['.m4a', '.mp3', '.wav', '.webm', '.mp4'];
+      const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      if (allowedExtensions.includes(fileExtension)) {
+        setUploadedAudio(file);
+        setIsFileSelected(true);
+        setSnackbarMessage('ファイルが選択されました。');
+      } else {
+        setSnackbarMessage('対応していないファイル形式です。');
+      }
+      setSnackbarOpen(true);
+    }
+  };
+
   const createChart = async (type: 'initial' | 'followUp') => {
-    if (!audioBlob) {
-      setSnackbarMessage('まず録音を行ってください。');
+    let blob: Blob | null = audioBlob;
+
+    if (isFileSelected && uploadedAudio) {
+      blob = uploadedAudio;
+    }
+
+    if (!blob) {
+      setSnackbarMessage('まず録音するか、ファイルをアップロードしてください。');
       setSnackbarOpen(true);
       return;
     }
@@ -78,13 +105,10 @@ export function MedicalChartAppComponent() {
       setSnackbarOpen(true);
       return;
     }
+
     setIsTranscribing(true);
     try {
-      console.log('API Key:', apiKey);
-
-      // トランスクリプトを取得
-      const { transcript } = await uploadAudio(audioBlob, apiKey);
-      console.log('Transcript:', transcript);
+      const { transcript } = await uploadAudio(blob, apiKey);
 
       if (!transcript) {
         setSnackbarMessage('音声のトランスクリプトが取得できませんでした。');
@@ -92,22 +116,21 @@ export function MedicalChartAppComponent() {
         return;
       }
 
-      console.log('initialPrompt:', initialPrompt);
-      console.log('followUpPrompt:', followUpPrompt);
-
       const prompt = type === 'initial' ? initialPrompt : followUpPrompt;
       const record = await generateMedicalRecord(transcript, prompt, apiKey);
-      console.log('Generated Medical Record:', record);
 
       setChartContent(record);
       setSnackbarMessage(`${type === 'initial' ? '初診' : '再診'}カルテを作成しました。`);
       setSnackbarOpen(true);
+
+      // ファイル選択をリセット
+      setUploadedAudio(null);
+      setIsFileSelected(false);
     } catch (error: any) {
       console.error('Error creating chart:', error);
       setSnackbarMessage(`エラーが発生しました: ${error.message}`);
       setSnackbarOpen(true);
     } finally {
-      // トランスクリプション処理終了
       setIsTranscribing(false);
     }
   };
@@ -118,12 +141,37 @@ export function MedicalChartAppComponent() {
     setSnackbarOpen(true);
   };
 
-  const clearAll = () => {
-    clearRecording();
-    setChartContent('');
-    setSnackbarMessage('すべてクリアしました。');
-    setSnackbarOpen(true);
+
+  const handleClearFiles = async () => {
+    try {
+      const response = await fetch('/api/clearFiles', {
+        method: 'POST',
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        setChartContent('');
+        setSnackbarMessage(data.message || 'ファイルをクリアしました。');
+      } else {
+        setSnackbarMessage(data.error || 'ファイルのクリアに失敗しました。');
+      }
+    } catch (error: any) {
+      console.error('Error clearing files:', error);
+      setSnackbarMessage(`エラーが発生しました: ${error.message}`);
+    } finally {
+      setSnackbarOpen(true);
+      setUploadedAudio(null);
+      setIsFileSelected(false);
+      clearRecording();
+    }
   };
+
+
+
+
+
+  const clearAll = handleClearFiles;
 
   const handleOpenSettings = (event: React.MouseEvent<HTMLButtonElement>) => {
     setSettingsAnchorEl(event.currentTarget);
@@ -149,12 +197,12 @@ export function MedicalChartAppComponent() {
         dialogType === 'api' ? 'api_key.txt' :
         dialogType === 'initialPrompt' ? 'initial_prompt.txt' :
         'follow_up_prompt.txt';
-  
+
       const content =
         dialogType === 'api' ? apiKey :
         dialogType === 'initialPrompt' ? initialPrompt :
         followUpPrompt;
-  
+
       const response = await fetch(`/api/config?filename=${filename}`, {
         method: 'POST',
         headers: {
@@ -162,9 +210,9 @@ export function MedicalChartAppComponent() {
         },
         body: JSON.stringify({ content })
       });
-  
+
       const result = await response.json();
-  
+
       if (response.ok) {
         setSnackbarMessage('設定を保存しました。');
         await loadConfig();
@@ -186,7 +234,8 @@ export function MedicalChartAppComponent() {
           {chartContent || 'カルテがここに表示されます。'}
         </Typography>
       </Paper>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+        {/* 録音ボタン */}
         <Button
           variant="contained"
           color={isRecording ? 'secondary' : 'primary'}
@@ -195,24 +244,47 @@ export function MedicalChartAppComponent() {
         >
           {isRecording ? '録音停止' : '録音開始'}
         </Button>
+
+        {/* ファイルアップロードボタン */}
+        <Button
+          variant="contained"
+          component="label"
+          color="primary"
+          startIcon={<FileUpload />}
+          disabled={isRecording || isTranscribing}
+        >
+          ファイルアップロード
+          <input
+            type="file"
+            hidden
+            accept="audio/*"
+            onChange={handleFileChange}
+          />
+        </Button>
+
+        {/* 初診カルテ作成ボタン */}
         <Button
           variant="contained"
           color="primary"
           startIcon={<NoteAdd />}
           onClick={() => createChart('initial')}
-          disabled={isRecording || isTranscribing}
+          disabled={isRecording || isTranscribing || (!audioBlob && !isFileSelected)}
         >
           初診カルテ作成
         </Button>
+
+        {/* 再診カルテ作成ボタン */}
         <Button
           variant="contained"
           color="primary"
           startIcon={<NoteAdd />}
           onClick={() => createChart('followUp')}
-          disabled={isRecording || isTranscribing}
+          disabled={isRecording || isTranscribing || (!audioBlob && !isFileSelected)}
         >
           再診カルテ作成
         </Button>
+
+        {/* コピー */}
         <Button
           variant="contained"
           color="primary"
@@ -221,14 +293,19 @@ export function MedicalChartAppComponent() {
         >
           コピー
         </Button>
+
+        {/* クリア */}
         <Button
           variant="contained"
           color="error"
           startIcon={<Clear />}
-          onClick={clearAll}
+          onClick={handleClearFiles}
+          disabled={isTranscribing}
         >
           クリア
         </Button>
+
+        {/* 設定 */}
         <Button
           variant="contained"
           color="info"
@@ -238,6 +315,7 @@ export function MedicalChartAppComponent() {
           設定
         </Button>
       </Box>
+
       <Menu
         anchorEl={settingsAnchorEl}
         open={Boolean(settingsAnchorEl)}
@@ -286,6 +364,7 @@ export function MedicalChartAppComponent() {
           <Button onClick={handleSave}>登録</Button>
         </DialogActions>
       </Dialog>
+
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}

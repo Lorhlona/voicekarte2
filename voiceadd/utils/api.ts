@@ -6,10 +6,15 @@ type Message = {
   content: string;
 };
 
-export const uploadAudio = async (audioBlob: Blob, apiKey: string): Promise<{ transcript: string, transcriptPath: string }> => {
+export const uploadAudio = async (
+  audioBlob: Blob,
+  apiKey: string
+): Promise<{ transcript: string; transcriptPath: string }> => {
   const formData = new FormData();
   formData.append('apiKey', apiKey);
-  formData.append('audio', audioBlob, 'audio.webm');
+
+  const fileName = audioBlob instanceof File ? audioBlob.name : 'audio';
+  formData.append('audio', audioBlob, fileName);
 
   const response = await fetch('/api/uploadAudio', {
     method: 'POST',

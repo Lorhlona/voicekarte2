@@ -59,8 +59,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // 拡張子を取得してファイルパスに追加
     const originalFilename = Array.isArray(audioFile.originalFilename)
       ? audioFile.originalFilename[0]
-      : audioFile.originalFilename;
-    const fileExt = path.extname(originalFilename);
+      : audioFile.originalFilename || 'audio';
+    const fileExt = path.extname(originalFilename) || '.webm';
     const baseFilename = path.basename(originalFilename, fileExt);
     const filePathWithExt = path.join(audioDir, `${baseFilename}${fileExt}`);
 
