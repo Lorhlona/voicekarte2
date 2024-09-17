@@ -23,28 +23,21 @@
 
 1. **リポジトリのクローン**
     ```bash
-    git clone https://github.com/your-repo/voiceadd.git
-    cd voiceadd
+    git clone https://github.com/Lorhlona/voicekarte.git
+    cd voicekarte
     ```
-    または、[ZIPでダウンロード](https://github.com/your-repo/voiceadd/archive/refs/heads/main.zip)して解凍します。
+    または、[ZIPでダウンロード](https://github.com/Lorhlona/voicekarte/archive/refs/heads/main.zip)して解凍します。
 
 2. **依存関係のインストール**
     プロジェクトフォルダ内でターミナルを開き、以下のコマンドを実行します。
     ```bash
     npm install
     ```
-    または
+     または
     ```bash
     yarn install
     ```
 
-3. **OpenAI APIキーの設定**
-    - `config` ディレクトリ内に `api_key.txt` ファイルを作成し、OpenAI の API キーを記入してください。
-
-4. **システムプロンプトの設定（任意）**
-    - 初診用プロンプト：`config/initial_prompt.txt`
-    - 再診用プロンプト：`config/follow_up_prompt.txt`
-    - これらのファイルにカスタムのプロンプトを記入することで、カルテの生成内容を調整できます。
 
 ## 起動方法
 
