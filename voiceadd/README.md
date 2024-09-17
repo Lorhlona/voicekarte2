@@ -38,6 +38,18 @@
     yarn install
     ```
 
+## 依存関係の更新
+
+1. **依存関係の更新**
+    ```bash
+    npm update
+    ```
+
+2. **依存関係のアップグレード**
+    ```bash
+    npx npm-check-updates -u
+    npm install
+    ```
 
 ## 起動方法
 
