@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { apiKey, transcript, prompt } = req.body;
 
@@ -11,6 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const openai = new OpenAI({
     apiKey,
+    dangerouslyAllowBrowser: true, 
   });
   try {
     type ChatRole = 'assistant' | 'user';

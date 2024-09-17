@@ -49,7 +49,7 @@ export function MedicalChartAppComponent() {
       setSnackbarOpen(true);
     }
   };
-  
+
   useEffect(() => {
     loadConfig();
   }, []);
@@ -71,21 +71,37 @@ export function MedicalChartAppComponent() {
       setSnackbarOpen(true);
       return;
     }
-  
+
     if (!apiKey) {
       setSnackbarMessage('APIキーが設定されていません。');
       setSnackbarOpen(true);
       return;
     }
-  
+
     try {
+      console.log('API Key:', apiKey); // 関数内部で API キーをログ出力
+
       const transcript = await uploadAudio(audioBlob, apiKey);
+      console.log('Transcript:', transcript); // トランスクリプトをログ出力
+
+      if (!transcript) {
+        setSnackbarMessage('音声のトランスクリプトが取得できませんでした。');
+        setSnackbarOpen(true);
+        return;
+      }
+
+      console.log('initialPrompt:', initialPrompt);
+      console.log('followUpPrompt:', followUpPrompt);
+
       const prompt = type === 'initial' ? initialPrompt : followUpPrompt;
       const record = await generateMedicalRecord(transcript, prompt, apiKey);
+      console.log('Generated Medical Record:', record); // 生成されたカルテをログに出力
+
       setChartContent(record);
       setSnackbarMessage(`${type === 'initial' ? '初診' : '再診'}カルテを作成しました。`);
       setSnackbarOpen(true);
     } catch (error: any) {
+      console.error('Error creating chart:', error);
       setSnackbarMessage(`エラーが発生しました: ${error.message}`);
       setSnackbarOpen(true);
     }

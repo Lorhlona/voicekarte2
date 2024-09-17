@@ -31,23 +31,28 @@ export const uploadAudio = async (audioBlob: Blob, apiKey: string): Promise<stri
   }
 };
 
+// utils/api.ts
+
 export const generateMedicalRecord = async (
   transcript: string,
   prompt: string,
   apiKey: string
 ): Promise<string> => {
-  const openai = getOpenAIApi(apiKey);
-  const messages: Message[] = [
-    { role: 'system', content: prompt },
-    { role: 'user', content: transcript },
-  ];
+  console.log('Sending to /api/generateRecord:', { apiKey, transcript, prompt }); // 送信内容をログに出力
 
-  const gptResponse = await openai.chat.completions.create({
-    model: 'chatgpt-4o-latest', // 正しいモデル名に修正
-    messages,
-    max_tokens: 128000,
-    temperature: 0.3,
+  const response = await fetch('/api/generateRecord', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ apiKey, transcript, prompt }),
   });
 
-  return gptResponse.choices[0].message?.content?.trim() || '';
+  const data = await response.json();
+
+  if (response.ok) {
+    return data.content;
+  } else {
+    throw new Error(data.error || 'カルテの生成に失敗しました');
+  }
 };

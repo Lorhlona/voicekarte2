@@ -59,9 +59,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       file: fs.createReadStream(filePathWithExt),
       model: 'whisper-1',
       language: 'ja',
-      response_format: 'text',
+      response_format: 'json', // ここを変更
     });
-
+    
     res.status(200).json({ transcript: transcription.text });
   } catch (error: any) {
     console.error('Error:', error);

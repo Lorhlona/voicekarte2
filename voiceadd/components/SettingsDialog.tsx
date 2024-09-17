@@ -7,6 +7,7 @@ import {
   Button,
   MenuItem,
   Select,
+  SelectChangeEvent,
   TextField,
   Typography,
 } from '@mui/material';
@@ -45,7 +46,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
     }
   }, [selectedOption, initialPrompt, followUpPrompt, apiKey]);
 
-  const handleOptionChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+  const handleOptionChange = (event: SelectChangeEvent<string>) => {
     setSelectedOption(event.target.value as string);
   };
 
@@ -115,12 +116,8 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="secondary">
-          キャンセル
-        </Button>
-        <Button onClick={handleRegister} color="primary" variant="contained">
-          登録
-        </Button>
+        <Button onClick={onClose}>キャンセル</Button>
+        <Button onClick={handleRegister}>登録</Button>
       </DialogActions>
     </Dialog>
   );
