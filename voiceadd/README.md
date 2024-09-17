@@ -38,8 +38,8 @@
     yarn install
     ```
 
-3. **OpenAI APIキーの設定**
-    - `config` ディレクトリ内に `api_key.txt` ファイルを作成し、OpenAI の API キーを記入してください。
+(3. **OpenAI APIキーの設定**
+    - `config` ディレクトリ内に `api_key.txt` ファイルを作成し、OpenAI の API キーを記入してください。) ←あとで起動してから設定でapikeyいれられます。
 
 4. **システムプロンプトの設定（任意）**
     - 初診用プロンプト：`config/initial_prompt.txt`
