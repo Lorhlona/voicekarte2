@@ -15,7 +15,7 @@ import {
   Menu,
   MenuItem
 } from '@mui/material';
-import { Mic, NoteAdd, FileCopy, Clear, Settings, FileUpload } from '@mui/icons-material';
+import { Mic, NoteAdd, FileCopy, Clear, Settings, FileUpload ,ExitToApp } from '@mui/icons-material';
 import useRecorder from '@/hooks/useRecorder';
 import { uploadAudio, generateMedicalRecord } from '@/utils/api';
 import { getConfigFromAPI } from '@/utils/config';
@@ -147,9 +147,9 @@ export function MedicalChartAppComponent() {
       const response = await fetch('/api/clearFiles', {
         method: 'POST',
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
         setChartContent('');
         setSnackbarMessage(data.message || 'ファイルをクリアしました。');
@@ -167,8 +167,17 @@ export function MedicalChartAppComponent() {
     }
   };
 
-
-
+  const handleExit = async () => {
+    try {
+      const response = await fetch('/api/exit', { method: 'POST' });
+      const data = await response.json();
+      setSnackbarMessage(data.message || 'サーバーを終了します。');
+      setSnackbarOpen(true);
+    } catch (error: any) {
+      setSnackbarMessage(`エラーが発生しました: ${error.message}`);
+      setSnackbarOpen(true);
+    }
+  };
 
 
   const clearAll = handleClearFiles;
@@ -313,6 +322,16 @@ export function MedicalChartAppComponent() {
           onClick={handleOpenSettings}
         >
           設定
+        </Button>
+
+        {/* 終了 */}
+        <Button
+          variant="contained"
+          color="error"
+          startIcon={<ExitToApp />}
+          onClick={handleExit}
+        >
+          終了
         </Button>
       </Box>
 
