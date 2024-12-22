@@ -35,8 +35,22 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
+echo アプリケーションをビルドしています...
+echo しばらくお待ちください...
 echo.
-echo インストールが完了しました！
+
+npm run build
+
+if %errorlevel% neq 0 (
+    echo.
+    echo エラー: ビルドに失敗しました。
+    echo 再度実行してください。
+    pause
+    exit /b 1
+)
+
+echo.
+echo インストールとビルドが完了しました！
 echo 次は app.bat を実行してアプリケーションを起動してください。
 echo.
 pause
