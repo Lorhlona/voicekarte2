@@ -21,8 +21,8 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-echo 本番サーバーを起動しています...
-start cmd /k "npm run start"
+echo 開発サーバーを起動しています...
+start cmd /k "npm run dev"
 
 echo ブラウザが開くまでしばらくお待ちください...
 timeout /t 15
