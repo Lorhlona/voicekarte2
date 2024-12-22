@@ -34,6 +34,7 @@ export function MedicalChartAppComponent() {
   const [initialPrompt, setInitialPrompt] = useState(initialSystemPrompt);
   const [followUpPrompt, setFollowUpPrompt] = useState(initialSystemPrompt);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [recordingConfirmOpen, setRecordingConfirmOpen] = useState(false);
 
   // 追加部分
   const [uploadedAudio, setUploadedAudio] = useState<Blob | null>(null);
@@ -59,15 +60,32 @@ export function MedicalChartAppComponent() {
     loadConfig();
   }, []);
 
-  const handleRecording = () => {
+  const handleRecordingClick = () => {
     if (!isRecording) {
-      startRecording();
-      setSnackbarMessage('録音を開始しました。');
+      if (audioBlob) {
+        setRecordingConfirmOpen(true);
+      } else {
+        startRecording();
+        setSnackbarMessage('録音を開始しました。');
+        setSnackbarOpen(true);
+      }
     } else {
       stopRecording();
       setSnackbarMessage('録音を完了しました。カルテ作成ボタンを押してください。');
+      setSnackbarOpen(true);
     }
+  };
+
+  const handleRecordingConfirm = () => {
+    setRecordingConfirmOpen(false);
+    clearRecording();
+    startRecording();
+    setSnackbarMessage('録音を開始しました。');
     setSnackbarOpen(true);
+  };
+
+  const handleRecordingCancel = () => {
+    setRecordingConfirmOpen(false);
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -249,7 +267,7 @@ export function MedicalChartAppComponent() {
           variant="contained"
           color={isRecording ? 'secondary' : 'primary'}
           startIcon={<Mic />}
-          onClick={handleRecording}
+          onClick={handleRecordingClick}
         >
           {isRecording ? '録音停止' : '録音開始'}
         </Button>
@@ -381,6 +399,25 @@ export function MedicalChartAppComponent() {
         <DialogActions>
           <Button onClick={handleCloseDialog}>キャンセル</Button>
           <Button onClick={handleSave}>登録</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* 録音確認ダイアログ */}
+      <Dialog
+        open={recordingConfirmOpen}
+        onClose={handleRecordingCancel}
+      >
+        <DialogTitle>録音の確認</DialogTitle>
+        <DialogContent>
+          <Typography>
+            前回の音声を削除してから録音を開始しますが、よろしいですか？
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleRecordingCancel}>キャンセル</Button>
+          <Button onClick={handleRecordingConfirm} color="primary">
+            録音開始
+          </Button>
         </DialogActions>
       </Dialog>
 
